@@ -1,0 +1,52 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: testvm0
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      domain:
+        resources:
+          requests:
+            memory: 1024M
+        devices:
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: emptydisk
+            disk:
+              bus: virtio
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: kubevirt/fedora-cloud-container-disk-demo:latest
+      - name: emptydisk
+        emptyDisk:
+          capacity: "2Gi"
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userDataBase64: I2Nsb3VkLWNvbmZpZwpzc2hfcHdhdXRoOiB5ZXMKdXNlcjogbGl1d2gKcGFzc3dvcmQ6IGZlZG9yYQpjaHBhc3N3ZDogeyBleHBpcmU6IEZhbHNlIH0KcGFja2FnZXM6CiAgLSBuZ2lueApydW5jbWQ6CiAgLSBbIHN5c3RlbWN0bCwgc3RhcnQsIG5naW54LnNlcnZpY2UgXQo=
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    nodePort: 30000
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort

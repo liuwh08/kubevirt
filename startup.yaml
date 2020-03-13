@@ -1,0 +1,9 @@
+#cloud-config
+ssh_pwauth: yes
+user: liuwh
+password: fedora
+chpasswd: { expire: False }
+packages:
+  - nginx
+runcmd:
+  - [ systemctl, start, nginx.service ]
